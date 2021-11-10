@@ -1,0 +1,52 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Disable SSH Password Login
+      replace:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication yes'
+        replace: 'PasswordAuthentication no'
+
+    - name: Restart SSH Daemon
+      systemd:
+        daemon_reload: yes
+        state: restarted
+        name: sshd.service
+
+    - name: Update and Upgrade Linode
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Create Your Limited User
+      user:
+        name: bennettnw2
+        shell: /bin/bash
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa
+
+    - name: Create Passwordless Sudo for User
+      copy:
+        dest: /etc/sudoers.d/10-user-bennettnw2
+        content: 'bennettnw2 ALL=(ALL) NOPASSWD:ALL'
+        mode: 0440
+        validate: 'visudo -cf %s'
+
+    - name: Add SSH Key to Server to Login as Limited User
+      authorized_key:
+        user: bennettnw2
+        key: "{{ item }}"
+      with_file:
+        - ~/.ssh/id_rsa.pub
+
+    - name: Comment Out `/dev/sdb` (swap partition) from `/etc/fstab`
+      replace:
+        path: /etc/fstab
+        regexp: '^\/dev\/sdb'
+        replace: '# /dev/sdb'
+
+    - name: Turn Off Swap Partition
+      command: /sbin/swapoff -a
+

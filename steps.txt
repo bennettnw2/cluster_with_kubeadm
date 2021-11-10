@@ -1,0 +1,22 @@
+ssh keys to linodes after creation
+create workspace folder
+- make config file and explain how config files have presidence?
+get ips and make hosts file
+check connection with `ansible -i hosts all -m ping`
+- link this command back to the config file and let people know they could use either methond
+- either method meaning using `-i hosts` to find the inventory or defining the inventory in the config file, `ansible.cfg` 
+create playbook to create user on all hosts
+- fit in updating and upgrading a new hots
+create or add to above playbook, securing host by allowing only key based login and removing root login
+- passwordless sudo
+  - I want create a file and add a line to said file
+  - change the permissions of the file to 440
+  - why is is better to create the file in sudoers.d/ than making the change using visudo and making changes to the actual sudoers file?
+
+-make sure to remove password logins.
+
+seems kubelet is not starting due to not having the config file created at `/var/lib/kublet/config.yaml`
+
+seems that file gets created after `kubelet init`
+
+kubelet cgroup driver: \"systemd\" is different from docker cgroup driver: \"cgroupfs\""

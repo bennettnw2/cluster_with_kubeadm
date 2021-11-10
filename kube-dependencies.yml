@@ -1,0 +1,47 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      apt:
+        update_cache: yes
+        name: docker.io
+
+    - name: Configure Docker `cgroup` Driver to Use `systemd`
+      replace:
+        path: /lib/systemd/system/docker.service
+        regexp: 'sock$'
+        replace: 'sock --exec-opt native.cgroupdriver=systemd'
+
+    - name: Reload Systemd Daemon and Docker Service
+      systemd:
+        state: restarted
+        daemon_reload: yes
+        name: docker.service
+
+    - name: Install APT Transport HTTPS
+      apt:
+        name: apt-transport-https
+
+    - name: Add Kubernetes apt-key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+    - name: Add Kubernetes to the APT Repository
+      apt_repository:
+        repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+
+    - name: Install `kubelet`
+      apt:
+        name: kubelet
+
+    - name: Install `kubeadm`
+      apt:
+        name: kubeadm
+
+- hosts: master
+  become: yes
+  tasks:
+    - name: Install `kubectl`
+      apt:
+        name: kubectl
